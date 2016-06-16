@@ -1,5 +1,7 @@
 # Basic Setup
 
+Run `bundle install` to get the required gems.
+
 The script will load the compiled beams into `~/.mix/beam`, so we need to get an `iex` that will load them.
 
 Hopefully, `iex` is just a shell script. If you happen to have a custom `$PATH` variable that points to `~/.local/bin`, then copy `iex` to this directory and rename it to something like `deviex`.
