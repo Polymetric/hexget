@@ -35,20 +35,40 @@ spinner.success
 # ENV['MIX_ENV'] = "production"
 # Also please don't use this in production.
 
+spinner = TTY::Spinner.new("[:spinner] Figuring out if we're in Elixir land or Erlang world", format: :dots, interval: 10)
+spinner.start
+if File.exist?("./rebar.config")
+  @type = "rebar"
+else
+  @type = "mix"
+end
+spinner.success
+
 spinner = TTY::Spinner.new("[:spinner] Getting dependencies...", format: :dots, interval: 10)
 spinner.start
-`mix deps.get`
+if @type == "rebar"
+  `rebar get-deps`
+else
+  `mix deps.get`
+end
 spinner.success
 
 spinner = TTY::Spinner.new("[:spinner] Compiling...", format: :dots, interval: 10)
 spinner.start
-`mix compile`
+`#{@type} compile`
 spinner.success
 
 spinner = TTY::Spinner.new("[:spinner] Moving compiled beams into #{ENV['HOME']}/.mix/beam", format: :dots, interval: 10)
 spinner.start
 FileUtils.mkdir_p "#{ENV['HOME']}/.mix/beam/#{PACKAGE_NAME}"
-FileUtils.cp_r("./_build/dev/lib/#{PACKAGE_NAME}/ebin/.", "#{ENV['HOME']}/.mix/beam")
+if @type == "rebar"
+  FileUtils.cp_r("./ebin/.", "#{ENV['HOME']}/.mix/beam")
+else
+  Dir.foreach("./_build/dev/lib") do |dir|
+    next if dir == '.' or dir == '..'
+    FileUtils.cp_r("./_build/dev/lib/#{dir}/ebin/.", "#{ENV['HOME']}/.mix/beam")
+  end
+end
 spinner.success
 
 at_exit do
